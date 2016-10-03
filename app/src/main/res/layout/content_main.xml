@@ -167,7 +167,8 @@
             android:text="Already Registered"
             android:gravity="center"
             android:id="@+id/btnAlreadyRegister"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:onClick="ToGraphViewPage"/>
     </LinearLayout>
 
 </LinearLayout>
