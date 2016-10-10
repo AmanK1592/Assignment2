@@ -69,7 +69,7 @@
             android:layout_height="wrap_content"
             android:inputType="numberDecimal"
             android:ems="10"
-            android:id="@+id/Age"
+            android:id="@+id/patientAge"
             android:layout_gravity="left"
             android:autoText="false" />
 
@@ -94,7 +94,7 @@
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/editText" />
+            android:id="@+id/patientName" />
 
     </LinearLayout>
 
@@ -114,6 +114,7 @@
             android:id="@+id/textView4" />
 
         <RadioGroup
+            android:id="@+id/sex"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
@@ -124,14 +125,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Male"
-                android:id="@+id/radioMale" />
+                android:id="@+id/radioMale"/>
 
             <RadioButton
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Female"
-                android:id="@+id/radioFemale" />
+                android:id="@+id/radioFemale"/>
         </RadioGroup>
 
     </LinearLayout>
@@ -167,7 +168,8 @@
             android:text="Already Registered"
             android:gravity="center"
             android:id="@+id/btnAlreadyRegister"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:onClick="ToGraphViewPage"/>
     </LinearLayout>
 
 </LinearLayout>
