@@ -69,9 +69,14 @@ public class MainActivity extends AppCompatActivity
         radioButtonGroup = (RadioGroup) findViewById(R.id.sex);
 
         try{
+            String PatientTable = "PatientTable";
             //create the database in external storage of smart phone
             db = SQLiteDatabase.openOrCreateDatabase( Environment.getExternalStorageDirectory()+ File.separator+ "myDB", null);
             db.beginTransaction();
+            db.execSQL("create table if not exists "+ PatientTable +"("
+                    + " recID integer PRIMARY KEY autoincrement, "
+                    + " PatientName text, "
+                    + " PatientTableName text ); ");
         }
         catch (SQLException e)
         {
@@ -126,6 +131,29 @@ public class MainActivity extends AppCompatActivity
                             db.endTransaction();
                         }
                     }
+
+                    try
+                    {
+                        db.beginTransaction();
+                        db.execSQL("create table if not exists "+ "PatientTable" +"("
+                                + " recID integer PRIMARY KEY autoincrement, "
+                                + " PatientName text, "
+                                + " PatientTableName text ); ");
+                        db.execSQL("INSERT INTO PatientTable (PatientName, PatientTableName) VALUES ('" + patientNameText + "', '" + tableName +"');");
+                        db.setTransactionSuccessful();
+                    }
+                    catch (SQLiteException e)
+                    {
+                        Log.i("Error: ",e.getMessage());
+                        Toast.makeText(MainActivity.this,e.getMessage(),Toast.LENGTH_LONG).show();
+                    }
+                    finally
+                    {
+                        Toast.makeText(MainActivity.this, "Patient details inserted in the PatientTable", Toast.LENGTH_LONG).show();
+                        db.endTransaction();
+                    }
+
+
                     Intent intent = new Intent(MainActivity.this, Graph.class);
                     startActivity(intent);
                 }
@@ -165,6 +193,10 @@ public class MainActivity extends AppCompatActivity
                         //create the database in external storage of smart phone
                         db = SQLiteDatabase.openOrCreateDatabase( Environment.getExternalStorageDirectory()+ File.separator+ "myDB", null);
                         db.beginTransaction();
+                        db.execSQL("create table if not exists "+ "PatientTable" +"("
+                                + " recID integer PRIMARY KEY autoincrement, "
+                                + " PatientName text, "
+                                + " PatientTableName text ); ");
                     }
                     catch (SQLException e)
                     {
