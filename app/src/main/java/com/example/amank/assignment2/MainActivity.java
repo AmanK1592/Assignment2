@@ -1,10 +1,18 @@
 package com.example.amank.assignment2;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,10 +20,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.os.Environment;
 import android.widget.Toast;
-import android.database.sqlite.SQLiteException;
-import android.database.SQLException;
+
 import java.io.File;
 
 
@@ -33,11 +39,26 @@ public class MainActivity extends AppCompatActivity
     RadioButton r;
     Button btnRegister;
     Button btnAlreadyRegister;
+    private static final int REQUEST_WRITE_STORAGE = 112;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        boolean hasPermission = (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        if (!hasPermission) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_WRITE_STORAGE);
+            while (!hasPermission)
+            {
+                hasPermission = (ContextCompat.checkSelfPermission(this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+            }
+        }
+
         setContentView(R.layout.content_main);
 
         patientID = (EditText) findViewById(R.id.patientID);
@@ -46,6 +67,26 @@ public class MainActivity extends AppCompatActivity
         btnRegister = (Button)findViewById(R.id.btnRegister);
         btnAlreadyRegister = (Button)findViewById(R.id.btnAlreadyRegister);
         radioButtonGroup = (RadioGroup) findViewById(R.id.sex);
+
+        try{
+            String PatientTable = "PatientTable";
+            //create the database in external storage of smart phone
+            db = SQLiteDatabase.openOrCreateDatabase( Environment.getExternalStorageDirectory()+ File.separator+ "myDB", null);
+            db.beginTransaction();
+            db.execSQL("create table if not exists "+ PatientTable +"("
+                    + " recID integer PRIMARY KEY autoincrement, "
+                    + " PatientName text, "
+                    + " PatientTableName text ); ");
+        }
+        catch (SQLException e)
+        {
+            Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        finally
+        {
+            //Toast.makeText(MainActivity.this, "", Toast.LENGTH_LONG).show();
+            db.endTransaction();
+        }
 
 
         btnRegister.setOnClickListener(new View.OnClickListener(){
@@ -65,20 +106,23 @@ public class MainActivity extends AppCompatActivity
                 try
                 {
                     String tableName = patientNameText + "_" + patientIDText +"_" + patientAgeText + "_" + patientSexText;
+                    tableName = tableName.trim();
                     if(!isTableExists(db,tableName))
                     {
                         try
                         {
+                            db.beginTransaction();
                             db.execSQL("create table "+ tableName +"("
                                     + " recID integer PRIMARY KEY autoincrement, "
-                                    + " x-axis text, "
-                                    + " y-axis text, "
-                                    + " z-axis text, "
+                                    + " Xaxis text, "
+                                    + " Yaxis text, "
+                                    + " Zaxis text, "
                                     + " timestamp text ); " );
                             db.setTransactionSuccessful();
                         }
                         catch (SQLiteException e)
                         {
+                            Log.i("Error: ",e.getMessage());
                             Toast.makeText(MainActivity.this,e.getMessage(),Toast.LENGTH_LONG).show();
                         }
                         finally
@@ -88,9 +132,34 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
 
+                    try
+                    {
+                        db.beginTransaction();
+                        db.execSQL("create table if not exists "+ "PatientTable" +"("
+                                + " recID integer PRIMARY KEY autoincrement, "
+                                + " PatientName text, "
+                                + " PatientTableName text ); ");
+                        db.execSQL("INSERT INTO PatientTable (PatientName, PatientTableName) VALUES ('" + patientNameText + "', '" + tableName +"');");
+                        db.setTransactionSuccessful();
+                    }
+                    catch (SQLiteException e)
+                    {
+                        Log.i("Error: ",e.getMessage());
+                        Toast.makeText(MainActivity.this,e.getMessage(),Toast.LENGTH_LONG).show();
+                    }
+                    finally
+                    {
+                        Toast.makeText(MainActivity.this, "Patient details inserted in the PatientTable", Toast.LENGTH_LONG).show();
+                        db.endTransaction();
+                    }
+
+
+                    Intent intent = new Intent(MainActivity.this, Graph.class);
+                    startActivity(intent);
                 }
                 catch (SQLException e)
                 {
+                    Log.i("Error: ",e.getMessage());
                     Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
                 }
 
@@ -108,16 +177,38 @@ public class MainActivity extends AppCompatActivity
     }
 
     protected void onStart() {
-        try{
-            //create the database in external storage of smart phone
-            db = SQLiteDatabase.openOrCreateDatabase( Environment.getExternalStorageDirectory()+File.separator+ "myDB", null);
-            db.beginTransaction();
-        }
-        catch (SQLException e)
-        {
-            Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
+
         super.onStart();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode)
+        {
+            case REQUEST_WRITE_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                {
+                    try{
+                        //create the database in external storage of smart phone
+                        db = SQLiteDatabase.openOrCreateDatabase( Environment.getExternalStorageDirectory()+ File.separator+ "myDB", null);
+                        db.beginTransaction();
+                        db.execSQL("create table if not exists "+ "PatientTable" +"("
+                                + " recID integer PRIMARY KEY autoincrement, "
+                                + " PatientName text, "
+                                + " PatientTableName text ); ");
+                    }
+                    catch (SQLException e)
+                    {
+                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                } else
+                {
+                    Toast.makeText(MainActivity.this, "The app was not allowed to write to your storage. Hence, it cannot function properly. Please consider granting it this permission", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+
     }
 
     @Override
