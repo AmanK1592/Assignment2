@@ -148,26 +148,9 @@
         <Button
             android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:text="Register"
+            android:text="Next"
             android:gravity="center"
-            android:id="@+id/btnRegister"
-            android:layout_gravity="center" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:gravity="center"
-        android:layout_marginTop="15dp">
-
-        <Button
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:text="Already Registered"
-            android:gravity="center"
-            android:id="@+id/btnAlreadyRegister"
+            android:id="@+id/btnNext"
             android:layout_gravity="center" />
     </LinearLayout>
 
